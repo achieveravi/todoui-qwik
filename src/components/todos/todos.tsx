@@ -1,4 +1,4 @@
-import { component$, useServerMount$, useStore } from '@builder.io/qwik';
+import { $, component$, useServerMount$, useStore } from '@builder.io/qwik';
 import { getTasks } from '~/services/task-service';
 import Task from '../task/task';
 export interface ITask {
@@ -16,6 +16,12 @@ export default component$(() => {
         tasks: [],
     });
 
+    const deleteHandler = $((deletedTask: ITask) => {
+        store.tasks = store.tasks.filter(
+            (task) => task._id !== deletedTask._id
+        );
+    });
+
     useServerMount$(async () => {
         store.tasks = (await getTasks()).data;
     });
@@ -23,7 +29,7 @@ export default component$(() => {
         <>
             <h1>Welcom to Todos</h1>
             {store.tasks.map((task) => (
-                <Task state={task} />
+                <Task state={task} onDelete={deleteHandler} />
             ))}
             <button
                 onClick$={() =>

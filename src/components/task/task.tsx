@@ -1,9 +1,8 @@
 import { component$, useStore } from '@builder.io/qwik';
 import { createTask, deleteTask, editTask } from '~/services/task-service';
-import { debounce } from '~/utils/utility';
 import { ITask } from '../todos/todos';
 
-export default component$((props: { state: ITask }) => {
+export default component$((props: { state: ITask; onDelete: any }) => {
     const task = props.state;
     const store = useStore({ isEditing: false, task });
     return (
@@ -11,10 +10,11 @@ export default component$((props: { state: ITask }) => {
             <input
                 type='checkbox'
                 checked={task.completed}
-                onChange$={(event) => {
+                onChange$={() => {
                     store.task.completed = !store.task.completed;
                     editTask(store.task._id as string, store.task);
                 }}
+                disabled={!store.task._id}
             ></input>
             {store.isEditing ? (
                 <input
@@ -36,17 +36,21 @@ export default component$((props: { state: ITask }) => {
                         if (!store.isEditing) {
                             store.task._id
                                 ? editTask(store.task._id, store.task)
-                                      .then((data) =>
-                                          console.log('Task Updated')
-                                      )
-                                      .catch((er) => console.log(er))
-                                : createTask(store.task);
+                                : createTask(store.task).then(
+                                      (data) => (store.task = data.data)
+                                  );
                         }
                     }}
                 >
                     {store.isEditing ? 'Done' : 'Edit'}
                 </button>
-                <button onClick$={() => deleteTask(store.task._id as string)}>
+                <button
+                    onClick$={() =>
+                        deleteTask(store.task._id as string).then((data) => {
+                            props.onDelete(data.data);
+                        })
+                    }
+                >
                     Delete
                 </button>
             </div>
