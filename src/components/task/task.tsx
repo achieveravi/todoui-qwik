@@ -8,6 +8,14 @@ export default component$((props: { state: ITask }) => {
     const store = useStore({ isEditing: false, task });
     return (
         <div className='task-container'>
+            <input
+                type='checkbox'
+                checked={task.completed}
+                onChange$={(event) => {
+                    store.task.completed = !store.task.completed;
+                    editTask(store.task._id as string, store.task);
+                }}
+            ></input>
             {store.isEditing ? (
                 <input
                     name={store.task._id}
